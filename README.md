@@ -14,13 +14,15 @@ The APIs will include:
 - System health indicators
 
 To implement UI/UX and mimic best user experience we will be using the industry standard React web framework for building web applications. Our main language here will be TypeScript that will bring forth tools like React & Tailwind CSS. This frontend will use the data from the backend APIs to display charts and tables, along with its respective prognostications via open-source frameworks with their respective documentations. 
-Front-end's job will be to keep components clear, codebase readable, gather APIs efficiently, and make the page look nice, clean and professional.
+Front-end's job will be to keep components clear, codebase readable, gather APIs efficiently, and make the page look nice, clean and professional. In the end, the Next.js portion will be hosted on the cloud via Vercel.
 
 **Note** *that core features and implementations will be for you and your team to decide.* 
 Although guides and instructions are given, in the end we want to see what **you** can accomplish. Creativity plays a huge role on the success of the project. Make it yours.
 
 There is a lot going on in this project. **This is okay!** Not even I know how 
 to navigate most of these components. Not without some research first.
+
+*At the end of the project we will separate the backend and frontend directories into two different GitHub repositories for hosting purposes.*
 
 # Additional features:
 
@@ -34,7 +36,7 @@ Chat Visualization > predictions performed vs actual data.
 |------------|------------------------------------|
 | Frontend   | React + TypeScript + Tailwind CSS  |
 | Backend    | Python, Flask, Gunicorn            |
-| Hosting    | AWS App Runner (Flask)             |
+| Hosting    | AWS App Runner (Flask), Vercel     |
 | AI         | OpenAI API                         |
 | Database   | SQL (Local -> AWS-hosted (?))      |
 | APIs       | Public stock data sources          |

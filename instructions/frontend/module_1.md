@@ -5,11 +5,11 @@ Please read the overview file /README.md if you haven't yet.
 
 As mentioned in this file, we will be using our Next.js framework that will allow us to start to design and create the entire application that will connect to the functions on the backend via API.
 
+*As opposed to the backend modules, we will not tell you what to code on these instructions. Instead we will analyze the files to get started on the front-end side of this project.*
+
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-Firstly, we will need to ensure we have the Node.js runtime that comes with npm (node package manager)
-
-Find out how to install Node.js. To enure the installation was successful, you should be able to run the two commands:
+Firstly, we will need to ensure we have the Node.js runtime that comes with npm (node package manager). Find out how to install Node.js. To enure the installation was successful, you should be able to run the two commands:
 ```bash
 node -v
 npm -v
