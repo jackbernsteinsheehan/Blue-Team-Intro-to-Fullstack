@@ -1,19 +1,8 @@
 
 # _____________________________________ Module 5 _____________________________________ #
 
-# Here we will connect with an OpenAI through its API. This will allow us to directly access a functionality that ChatGPT 
-# would directly do.
-
-# We will intrdouce something called a .env.local which allows us to keep hidden variables within our own machine and load up
-# to any place we want in source code
-
-# create a .env.local file at the root
-# if you have it already, skip this
-    # locate the .gitignore file and type in the name of the file anywhere
-    # .env.local
-    # make sure the name of the file turns gray whenever we save with this change.
-    
-# .gitignore will NOT push the selected files to the repository. That's the whole point
+# Here we will connect with an OpenAI through its SDK. This will allow us to directly access a 
+# functionality that ChatGPT would directly do.
 
 from openai import OpenAI, AuthenticationError # pip install openai
 from backend.utils.support import get_secret
@@ -27,7 +16,7 @@ class AI:
 
     def __set_client(self):
         try:
-            return OpenAI(self.key) # we are accessing the client via OpenAI SDK
+            return # TODO: we are accessing the client via OpenAI SDK
         except Exception as error:
             print(f"Error ocurred when intializing the client. Error: {error}")
     
@@ -48,11 +37,10 @@ class AI:
         if not prompt:
             return {"message": "Prompt set is invalid", "response":{}}
         try:
-            response = self.client.chat.completions.create(
-                ... # TODO
-            )
+            # TODO: Use our client to access a response given the prompt.
             # validate response using our method
-            return {"message": "success", "response" : response}
+            content = ...
+            return {"message": "success", "response" : content}
         
         except AuthenticationError:
             return {"message":"API key is incorrect. Authentication is invalid", "response":{}}
