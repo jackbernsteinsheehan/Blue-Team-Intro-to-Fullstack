@@ -2,10 +2,44 @@
 # _____________________________________ Module 1 _____________________________________ #
 
 import requests # run `pip install requests` if haven't already
+import pandas as pd
+import json
 from pprint import pprint
 
 # For code running (print testing, etc...), run the file as a `module` with the flag -m
 # py -m backend.data.fetch_stocks <- no .py
+def get_data_details(data:dict)->dict:
+    try:
+        if "Meta Data" not in data:
+            raise ValueError("No 'Meta Data' found in API response")
+        
+        meta = data["Meta Data"]
+        details = {
+            "symbol": meta.get("2. Symbol", "Unknown"),
+            "last_refreshed": meta.get("3. Last Refreshed", "Unknown"),
+            "interval": meta.get("4. Interval","N/A"),
+        }
+        timeSeriesKey = next((key for key in data.keys() if "Time Series" in key), None)
+        if not timeSeriesKey:
+            raise ValueError("No tie series data found in response.")
+        
+        timeSeriesData = data[timeSeriesKey]
+
+        mostRecentDate = sorted(timeSeriesData.keys())[-1]
+        latestData = timeSeriesData[mostRecentDate]
+
+        details["latest"] = {
+            "data": mostRecentDate,
+            "open": latestData.get("1. open", "N/A"),
+            "high": latestData.get("2. high", "N/A"),
+            "low": latestData.get("3.low", "N/A"),
+            "close": latestData.get("4. close", "N/A"),
+            "volume": latestData.get("5. volume", "N/A"),
+        }
+        return details
+    except Exception as error:
+        print(f"Error parsing stock data details: {error}")
+        return {}
 
 # we will export this function 
 def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", endpoint:str="query"):
@@ -14,7 +48,7 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
     https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&outputsize=full&apikey=demo
     
     API Key:
-    ---
+    VDYLR2S1C4ZWII9J
     
     Full Documentation:
     
@@ -22,23 +56,40 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
     
     '''
     result = {}
-    request_uri = f'' # TODO 2: build the request URI here!! use the parameters (base_url, endpoint, params) as building blocks
+    # TODO 2: build the request URI here!! use the parameters (base_url, endpoint, params) as building blocks
+    request_uri = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo'
     try:
+        # creates the request
+        response = requests.get(request_uri) 
         
-        response = requests.get(request_uri) # creates the request
-        
-        if response.status_code == 404: # 404 not found
+        # 404 not found
+        if response.status_code == 404: 
             raise Exception("The error indicates that the request was not found. Check the request and try again.")
-        elif response.status_code == 403: # 403 forbidden
+        # 403 forbidden
+        elif response.status_code == 403: 
             raise Exception("Access was denied to you. Ensure exact API key spelling and try again. If issue persists contact Daniel")
-        elif response.status_code == 200: # 200 OK
+        # 200 OK
+        elif response.status_code == 200: 
             print('Yay! The connection works!\n')
 
-            data:dict = response.json() # get the content of the API. This should include the JSON files
+            # get the content of the API. This should include the JSON files
+            data:dict = response.json() 
             pprint(data)
             
             # TODO 4: Uncomment and implement
-            # details = get_data_details(data)
+            details = get_data_details(data)
+
+            stocks = pd.DataFrame(data)
+            stocks.columns = ['open', 'high', 'low', 'close', 'volume']
+            count = 0
+
+            print(stocks.columns())
+            print(stocks.mean())
+            print(stocks.std())
+            print(stocks.median())
+            print(stocks.min())
+            print(stocks.max())
+
             
             # TODO 5
             # standing = get_standing(details)
@@ -50,11 +101,11 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
         print(f"There was an issue with the data fetching function. Error:\n{some_error}")
         return None
 
-fetch_stock_data('', '', '') # TODO 3: Test the function!
+# TODO 3: Test the function!
+fetch_stock_data('', '', '') 
 
 # TODO 4
-# def get_data_details(data:dict)->dict:
-    # pass # Follow instructions carefully :)
+
 
 # TODO 5
 # def get_standing(details:dict)->str:
