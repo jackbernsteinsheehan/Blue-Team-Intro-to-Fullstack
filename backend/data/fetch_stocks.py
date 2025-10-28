@@ -2,13 +2,24 @@
 # _____________________________________ Module 1 _____________________________________ #
 
 import requests # run `pip install requests` if haven't already
-import pandas as pd
+import pandas as pd 
 import json
 from pprint import pprint
 
 # For code running (print testing, etc...), run the file as a `module` with the flag -m
 # py -m backend.data.fetch_stocks <- no .py
 def get_data_details(data:dict)->dict:
+    stocks = pd.DataFrame(data)
+    stocks.columns = ['open', 'high', 'low', 'close', 'volume']
+    count = 0
+
+    print(stocks.columns())
+    print(stocks.mean())
+    print(stocks.std())
+    print(stocks.median())
+    print(stocks.min())
+    print(stocks.max())
+    
     try:
         if "Meta Data" not in data:
             raise ValueError("No 'Meta Data' found in API response")
@@ -36,6 +47,7 @@ def get_data_details(data:dict)->dict:
             "close": latestData.get("4. close", "N/A"),
             "volume": latestData.get("5. volume", "N/A"),
         }
+
         return details
     except Exception as error:
         print(f"Error parsing stock data details: {error}")
@@ -56,6 +68,7 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
     
     '''
     result = {}
+    
     # TODO 2: build the request URI here!! use the parameters (base_url, endpoint, params) as building blocks
     request_uri = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo'
     try:
@@ -79,18 +92,6 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
             # TODO 4: Uncomment and implement
             details = get_data_details(data)
 
-            stocks = pd.DataFrame(data)
-            stocks.columns = ['open', 'high', 'low', 'close', 'volume']
-            count = 0
-
-            print(stocks.columns())
-            print(stocks.mean())
-            print(stocks.std())
-            print(stocks.median())
-            print(stocks.min())
-            print(stocks.max())
-
-            
             # TODO 5
             # standing = get_standing(details)
             # result = details["standing"] = standing
