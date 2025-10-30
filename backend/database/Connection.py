@@ -2,16 +2,15 @@
 # _____________________________________ Module 3 _____________________________________ #
 
 import mysql.connector
-# pip install mysql-connector-python
 
 class Connection:
     def __init__(self) -> None:
         
         self.host = 'localhost'
         # TODO: Read module_3.md instructions to set these up according to what you put
-        self.user = ''
-        self.password = ''
-        self.database = ''
+        self.user = 'root'
+        self.password = 'Jj090809080908$'
+        self.database = 'OSC'  ## Is this correct??
         
         self.status = 'inactive'
         self.conn = self.__init_conn()
@@ -20,9 +19,12 @@ class Connection:
     # ___________________ Connection Methods ___________________ #
     
     def __init_conn(self):
+        if getattr(self, "conn", None) is not None:
+            return self.conn.cursor(dictionary=True)
+
         try:
             connection = mysql.connector.connect(
-                host=self.host,
+                host = self.host,
                 user = self.user,
                 password = self.password,
                 database = self.database
@@ -71,7 +73,7 @@ class Connection:
             
             return 'failure'
     
-    def query_submit(self) -> int:
+    def query_submit(self, table: str, data: dict) -> int:
         '''
         Arguably the most important function. This could go perfect or it can cause lots of issues.
         Enters a record on a table.
@@ -82,13 +84,59 @@ class Connection:
         You don't know what type of data to expect! 
         What could you do to upload dynamic data? (e.g. **kwargs, dictionary, etc.. (?))
         '''
-        pass # TODO
+        if not isinstance(table, str) or not isinstance(data, dict) or len(data) == 0:
+            return 400  # bad request
 
-    def query_extract(self) -> dict:
+        try:
+            cols = []
+            placeholders = []
+            values = []
+
+            # Prepare data
+            for col, val in data.items():
+                cols.append(col)
+                placeholders.append('%s')
+                values.append(val)
+            
+            # Build query
+            sql = "INSERT INTO " + table + " (" + ", ".join(cols) + ") VALUES (" + ", ".join(placeholders) + ")"
+
+            # Execute and commit
+            self.cursor.execute(sql, values)
+            self.conn.commit()
+            
+            return 201
+
+        except ValueError:
+            # invalid identifier format
+            return 400
+
+        except mysql.connector.Error as e:
+            # Map common MySQL errors to useful status codes
+            # https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
+            if e.errno == 1146:       # ER_NO_SUCH_TABLE
+                return 404
+            elif e.errno == 1062:     # ER_DUP_ENTRY
+                return 409
+            elif e.errno in (1452,):  # ER_NO_REFERENCED_ROW_2 (FK fail)
+                return 422
+            else:
+                # print(f"query_submit error [{e.errno}]: {e.msg}")
+                return 500
+
+
+    def query_extract(self, table: str, field: str, conditions: str) -> dict:
         '''
-        Extract a record from a table. Allow for OPTIONAL filtering conditions.
+        Extract a record from a table. Allow for OPTIONAL filtering conditions. conditions should
+        be passed as a boolean statement acceptable for SQL.
         '''
-        pass # TODO
+        
+        query = '''
+        SELECT {field}
+        FROM {table}
+        WHERE {str}
+        '''
+
     
     def get_table_data(self) -> dict:
         '''
@@ -96,11 +144,29 @@ class Connection:
         '''
         pass # TODO
         
-    def show_tables(self) -> list:
+    def show_tables(self) -> list[str]:
         '''
         Returns a list of all table names in the data base
         '''
-        pass # TODO
+        try:
+            # Not sure if this query is correct
+            query = '''
+            SELECT table_name
+            FROM information.schema.tables
+            WHERE table_schema = DATABASE()
+            AND table_type = 'BASE_TABLE'
+            ORDER BY table_name
+            '''
+            self.cursor.execute(query)
+            rows = self.cursor.fetchall()
+            names = []
+            for row in rows:
+                names.append(row["table_name"])
+            return names
+
+        except mysql.connector.Error as error:
+            print(f'show tables error: {error}')
+            return []
     
     # __________________ Custom Query __________________ #
     
@@ -130,5 +196,4 @@ class Connection:
             pass
         elif '':
             pass
-        ...    
-    
+        ...
