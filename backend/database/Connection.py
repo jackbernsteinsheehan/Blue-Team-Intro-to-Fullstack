@@ -1,35 +1,35 @@
 
 # _____________________________________ Module 3 _____________________________________ #
-
+## Remember to only commit this file to Git. Your changes to fetch_stocks 
+## won't be compatible with Adriana's.
+from numbers import Number
 import mysql.connector
 
 class Connection:
     def __init__(self) -> None:
         
         self.host = 'localhost'
-        # TODO: Read module_3.md instructions to set these up according to what you put
         self.user = 'root'
-        self.password = 'Jj090809080908$'
-        self.database = 'OSC'  ## Is this correct??
+        self.password = 'Jj09080908$'
+        self.database = 'OSC'
         
         self.status = 'inactive'
         self.conn = self.__init_conn()
-        self.cursor = self.__init_conn()
+        if not self.conn:
+            raise RuntimeError("DB connect failed")
+        self.cursor = self.conn.cursor(dictionary=True)
 
     # ___________________ Connection Methods ___________________ #
     
     def __init_conn(self):
-        if getattr(self, "conn", None) is not None:
-            return self.conn.cursor(dictionary=True)
-
         try:
             connection = mysql.connector.connect(
-                host = self.host,
-                user = self.user,
-                password = self.password,
-                database = self.database
+            user=self.user,
+            password=self.password,
+            database=self.database,
+            unix_socket="/tmp/mysql.sock",
             )
-            self.status = 'active'
+            self.status = "active"
             return connection
         
         except mysql.connector.Error as error:
@@ -40,7 +40,7 @@ class Connection:
     def __init_cursor(self):
 
         if self.conn:
-            return self.conn.cursor()
+            return self.conn.cursor(dictionary=True)
         else:
             raise AttributeError("Connection Error: `self.conn` Attribute does pose a valid data type.")
     
@@ -72,9 +72,13 @@ class Connection:
         except mysql.connector.Error:
             
             return 'failure'
-    
-    def query_submit(self, table: str, data: dict) -> int:
-        '''
+        from numbers import Number
+
+    def query_submit(self, table: str, payload: dict) -> int:
+        """
+
+        This method has been tested preliminarily, seems to work.
+
         Arguably the most important function. This could go perfect or it can cause lots of issues.
         Enters a record on a table.
         Returns a standard status code according to the operation's outcome. Example, 201 if success.
@@ -83,59 +87,135 @@ class Connection:
         HINT:
         You don't know what type of data to expect! 
         What could you do to upload dynamic data? (e.g. **kwargs, dictionary, etc.. (?))
-        '''
-        if not isinstance(table, str) or not isinstance(data, dict) or len(data) == 0:
-            return 400  # bad request
+    
+        Accepts payload:
+        {
+        "IBM": {
+            "open": {"mean": float, "std": float, "median": float, "low": float, "max": float},
+            "high": {...}, "low": {...}, "close": {...}, "volume": {...}
+        },
+        "count": int,
+        "standing": str
+        }
+        Inserts rows into columns:
+        (ticker, metric, mean, median, std, low, max, count, standing)
+        """
+        # Make sure it's a dict
+        if not isinstance(payload, dict):
+            raise ValueError("payload must be a dict")
 
-        try:
-            cols = []
-            placeholders = []
-            values = []
-
-            # Prepare data
-            for col, val in data.items():
-                cols.append(col)
-                placeholders.append('%s')
-                values.append(val)
-            
-            # Build query
-            sql = "INSERT INTO " + table + " (" + ", ".join(cols) + ") VALUES (" + ", ".join(placeholders) + ")"
-
-            # Execute and commit
-            self.cursor.execute(sql, values)
-            self.conn.commit()
-            
-            return 201
-
-        except ValueError:
-            # invalid identifier format
-            return 400
-
-        except mysql.connector.Error as e:
-            # Map common MySQL errors to useful status codes
-            # https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
-            if e.errno == 1146:       # ER_NO_SUCH_TABLE
-                return 404
-            elif e.errno == 1062:     # ER_DUP_ENTRY
-                return 409
-            elif e.errno in (1452,):  # ER_NO_REFERENCED_ROW_2 (FK fail)
-                return 422
-            else:
-                # print(f"query_submit error [{e.errno}]: {e.msg}")
-                return 500
+        # REQUIRED fields
+        if "count" not in payload:
+            raise ValueError("payload['count'] is required")
+        if "standing" not in payload:
+            raise ValueError("payload['standing'] is required")
 
 
-    def query_extract(self, table: str, field: str, conditions: str) -> dict:
+        count_val = payload["count"]
+        standing_val = payload["standing"]
+
+        if not isinstance(count_val, Number):
+            raise ValueError("payload['count'] must be numeric")
+        if not isinstance(standing_val, str):
+            raise ValueError("payload['standing'] must be a string")
+
+
+        # Flatten data
+        rows = []
+        metrics_expected = ("open", "high", "low", "close", "volume")
+
+        for ticker, metrics in payload.items():
+            if ticker in ("count", "standing"):
+                continue
+            if not isinstance(metrics, dict):
+                raise ValueError(f"payload['{ticker}'] must be a dict of metrics")
+            for metric_name, stats in metrics.items():
+                if metric_name not in metrics_expected:
+                    continue  # or raise if you want strict checking
+                if not isinstance(stats, dict):
+                    raise ValueError(f"payload['{ticker}']['{metric_name}'] must be a dict")
+                # pull stats (all required; error if missing or wrong type)
+                try:
+                    mean_v   = stats["mean"]
+                    std_v    = stats["std"]
+                    median_v = stats["median"]
+                    low_v    = stats["low"]
+                    max_v    = stats["max"]
+                except KeyError as e:
+                    raise ValueError(f"Missing stat {e} under {ticker}/{metric_name}")
+
+                for key, val in (("mean",mean_v),("std",std_v),("median",median_v),("low",low_v),("max",max_v)):
+                    if not isinstance(val, Number):
+                        raise ValueError(f"Stat '{key}' for {ticker}/{metric_name} must be numeric")
+
+                rows.append((ticker, metric_name, mean_v, median_v, std_v, low_v, max_v, count_val, standing_val))
+
+        if not rows:
+            return 0
+
+        sql = f"""INSERT INTO {table}
+                (ticker, metric, mean, median, std, low, max, count, standing)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+
+        with self.conn.cursor() as cur:
+            cur.executemany(sql, rows)
+        self.conn.commit()
+        return 201
+
+    
+    def query_extract(self, table: str, field: str, conditions: str=None) -> dict:
         '''
         Extract a record from a table. Allow for OPTIONAL filtering conditions. conditions should
         be passed as a boolean statement acceptable for SQL.
+        -table: the table name
+        -field: comma-separated columns
         '''
-        
-        query = '''
-        SELECT {field}
-        FROM {table}
-        WHERE {str}
-        '''
+        try:
+            # Handle comma-separated vals
+            field = field.strip()
+            if field == '' or field == '*':
+                fields_sql = '*'
+            else:
+                parts = field.split(',')
+                quoted = []
+                for p in parts:
+                    name = p.strip()
+                    quoted.append(f'`{name}`')
+                fields_sql = ', '.join(quoted)
+
+            # Table
+            table_sql = f'`{table}`'
+
+            # Optional filtering conditions
+            where_sql = ''
+            if isinstance(conditions, str) and conditions.strip():
+                # Add splitting for mutliple conditions?
+                conditions = conditions.strip()
+                if conditions:
+                    where_sql = " WHERE " + conditions
+            
+            # Build query
+            sql = f"SELECT {fields_sql} FROM {table_sql}{where_sql}"
+
+            # Execute query
+            print(sql)
+            self.cursor.execute(sql)
+            rows = self.cursor.fetchall()
+
+            # make a list
+            result = []
+            for row in rows:
+                result.append(row)
+            
+            #print(result)
+            return result
+
+        except(TypeError, ValueError) as error:
+            print(f'query_extract input error: {error}')
+            return []
+        except mysql.connector.Error as error:
+            print(f"query_extract DB error [{getattr(error,'errno','?')}]: {getattr(error,'msg', str(error))}")
+            return []
 
     
     def get_table_data(self) -> dict:
