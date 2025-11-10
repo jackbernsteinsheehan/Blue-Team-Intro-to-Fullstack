@@ -9,46 +9,54 @@ from pprint import pprint
 # For code running (print testing, etc...), run the file as a `module` with the flag -m
 # py -m backend.data.fetch_stocks <- no .py
 def get_data_details(data:dict)->dict:
-    stocks = pd.DataFrame(data)
-    stocks.columns = ['open', 'high', 'low', 'close', 'volume']
-    count = 0
-
-    print(stocks.columns())
-    print(stocks.mean())
-    print(stocks.std())
-    print(stocks.median())
-    print(stocks.min())
-    print(stocks.max())
     
     try:
         if "Meta Data" not in data:
             raise ValueError("No 'Meta Data' found in API response")
         
         meta = data["Meta Data"]
-        details = {
-            "symbol": meta.get("2. Symbol", "Unknown"),
-            "last_refreshed": meta.get("3. Last Refreshed", "Unknown"),
-            "interval": meta.get("4. Interval","N/A"),
-        }
+        details = meta.get("2. Symbol", "Unknown")
+            #"symbol": meta.get("2. Symbol", "Unknown"),
+            #"last_refreshed": meta.get("3. Last Refreshed", "Unknown"),
+            #"interval": meta.get("4. Interval","N/A"),
+        #}
         timeSeriesKey = next((key for key in data.keys() if "Time Series" in key), None)
         if not timeSeriesKey:
             raise ValueError("No tie series data found in response.")
         
         timeSeriesData = data[timeSeriesKey]
 
-        mostRecentDate = sorted(timeSeriesData.keys())[-1]
-        latestData = timeSeriesData[mostRecentDate]
+        #mostRecentDate = sorted(timeSeriesData.keys())[-1]
+        #latestData = timeSeriesData[mostRecentDate]
+        
+        stocks = pd.DataFrame.from_dict(timeSeriesData, orient='index', dtype=float)
+        stocks.columns = ['open', 'high', 'low', 'close', 'volume']
+        #stocks.index = pd.to_datetime(stocks.index)
+        stocks = stocks.astype(float)
 
-        details["latest"] = {
-            "data": mostRecentDate,
-            "open": latestData.get("1. open", "N/A"),
-            "high": latestData.get("2. high", "N/A"),
-            "low": latestData.get("3.low", "N/A"),
-            "close": latestData.get("4. close", "N/A"),
-            "volume": latestData.get("5. volume", "N/A"),
-        }
+        for column in stocks.columns:
+            stocks[column] = {
+                "mean" : print(round(stocks[column].mean())),
+                "standard deviation" : print(round(stocks[column].std())),
+                "median" : print(round(stocks[column].median())),
+                "min" : print(round(stocks[column].min())),
+                "max" : print(round(stocks[column].max()))
+            }
 
-        return details
+        #details["latest"] = {
+            #"data": mostRecentDate,
+            #"open": latestData.get("1. open", "N/A"),
+            #"high": latestData.get("2. high", "N/A"),
+            #"low": latestData.get("3.low", "N/A"),
+            #"close": latestData.get("4. close", "N/A"),
+            #"volume": latestData.get("5. volume", "N/A"),
+        #}
+
+        
+        print("Details values: ", details, type(details))
+        my_final_data = stocks.to_dict()
+
+        return my_final_data
     except Exception as error:
         print(f"Error parsing stock data details: {error}")
         return {}
