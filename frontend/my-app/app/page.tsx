@@ -1,23 +1,16 @@
-
-// const Box = () => {
-//   return (
-//       <>
-//       <div className="flex justify-center pt-[30px]"> {/* The positioning of the box is this*/}
-//           <div className="w-[300px] h-[300px] border border-green-300 border-[5px] bg-red-500
-//           hover:bg-blue-400 transition-all duration-400 ease-in-out"> {/* The actual box is this*/}
-//           </div>
-//       </div>
-//       </>
-//   );
-// }
-// export default Box;
-
-import NavBar from "./components/NavBar"
+import Rectangle from "./components/rectangle";
 
 const HomePage = () => {
     return (
-        <NavBar/>
+        <div className="flex w-full min-h-screen justify-center bg-white">
+            <div className="flex flex-col w-full items-center">
+                <h1 className="text-[50px] text-center text-black">
+                    HELLO
+                </h1>
+                <Rectangle />
+            </div>
+        </div>
     );
 }
 
-export default NavBar
+export default HomePage;
