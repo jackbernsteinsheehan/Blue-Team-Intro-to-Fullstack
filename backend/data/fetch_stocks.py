@@ -18,7 +18,7 @@ def get_data_details(data:dict)->dict:
         
         timeSeriesKey = next((key for key in data.keys() if "Time Series" in key), None)
         if not timeSeriesKey:
-            raise ValueError("No tie series data found in response.")
+            raise ValueError("No time series data found in response.")
         
         timeSeriesData = data[timeSeriesKey]
         
