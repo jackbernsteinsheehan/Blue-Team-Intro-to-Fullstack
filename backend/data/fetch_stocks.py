@@ -28,7 +28,7 @@ def get_data_details(data:dict)->dict:
             "2. high": "high",
             "3. low": "low",
             "4. close": "close",
-            "5. volume": "volumn",
+            "5. volume": "volume",
         })
         stocks = stocks.astype(float)
 
@@ -91,7 +91,7 @@ def get_standing(details:dict)->str:
         return "Unknown"
     
 # we will export this function 
-def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", endpoint:str="query"):
+def fetch_stock_data(symbol: str, function: str, interval:str= None, apikey: str = "VDYLR2S1C4ZWII9J"):
     '''
     URL Sample:
     https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&outputsize=full&apikey=demo
@@ -104,14 +104,23 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
     https://www.alphavantage.co/documentation/ <---------- # TODO 1
     
     '''
-    result = {}
+    #result = {}
     
     # TODO 2: build the request URI here!! use the parameters (base_url, endpoint, params) as building blocks
-    request_uri = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo'
+    #request_uri = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo'
+    
     try:
-        # creates the request
-        response = requests.get(request_uri) 
-        
+        params = {
+        "function": function,
+        "symbol": symbol,
+        "apikey": apikey
+        }
+        # creates the request 
+        if interval:
+            params["interval"] = interval
+
+        response = requests.get('https://www.alphavantage.co/query', params=params)
+
         # 404 not found
         if response.status_code == 404: 
             raise Exception("The error indicates that the request was not found. Check the request and try again.")
@@ -123,24 +132,27 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
             print('Yay! The connection works!\n')
 
             # get the content of the API. This should include the JSON files
-            data:dict = response.json() 
-            pprint(data)
+        data:dict = response.json() 
+        pprint(data)
             
             # TODO 4: Uncomment and implement
-            details = get_data_details(data)
+        details = get_data_details(data)
 
             # TODO 5
-            standing = get_standing(details)
-            result = details["standing"] = standing
+        standing = get_standing(details)
+        details["standing"] = standing
         
-        return result # Done
+        return details # Done
 
     except Exception as some_error:
         print(f"There was an issue with the data fetching function. Error:\n{some_error}")
         return None
 
 # TODO 3: Test the function!
-fetch_stock_data('', '', '') 
+#fetch_stock_data('', '', '') 
+if __name__ == "__main__":
+    result = fetch_stock_data(symbol="IBM", function="TIME_SERIES_MONTHLY")
+    pprint(result)
 
 # TODO 4
 
