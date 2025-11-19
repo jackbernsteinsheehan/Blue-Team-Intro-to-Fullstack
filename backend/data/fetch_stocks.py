@@ -1,7 +1,7 @@
 
 # _____________________________________ Module 1 _____________________________________ #
 
-import requests # run `pip install requests` if haven't already
+import requests
 import pandas as pd 
 import json
 from pprint import pprint
@@ -14,53 +14,82 @@ def get_data_details(data:dict)->dict:
         if "Meta Data" not in data:
             raise ValueError("No 'Meta Data' found in API response")
         
-        meta = data["Meta Data"]
-        details = meta.get("2. Symbol", "Unknown")
-            #"symbol": meta.get("2. Symbol", "Unknown"),
-            #"last_refreshed": meta.get("3. Last Refreshed", "Unknown"),
-            #"interval": meta.get("4. Interval","N/A"),
-        #}
+        symbol = data["Meta Data"].get("2. Symbol", "Unknown")
+        
         timeSeriesKey = next((key for key in data.keys() if "Time Series" in key), None)
         if not timeSeriesKey:
             raise ValueError("No tie series data found in response.")
         
         timeSeriesData = data[timeSeriesKey]
-
-        #mostRecentDate = sorted(timeSeriesData.keys())[-1]
-        #latestData = timeSeriesData[mostRecentDate]
         
-        stocks = pd.DataFrame.from_dict(timeSeriesData, orient='index', dtype=float)
-        stocks.columns = ['open', 'high', 'low', 'close', 'volume']
-        #stocks.index = pd.to_datetime(stocks.index)
+        stocks = pd.DataFrame.from_dict(timeSeriesData, orient='index')
+        stocks = stocks.rename(columns = {
+            "1. open": "open",
+            "2. high": "high",
+            "3. low": "low",
+            "4. close": "close",
+            "5. volume": "volumn",
+        })
         stocks = stocks.astype(float)
 
-        for column in stocks.columns:
-            stocks[column] = {
-                "mean" : print(round(stocks[column].mean())),
-                "standard deviation" : print(round(stocks[column].std())),
-                "median" : print(round(stocks[column].median())),
-                "min" : print(round(stocks[column].min())),
-                "max" : print(round(stocks[column].max()))
+        stats = {}
+        for col in stocks.columns:
+            stats[col] = {
+                "mean": stocks[col].mean(),
+                "std": stocks[col].std(),
+                "median": stocks[col].median(),
+                "low": stocks[col].min(),
+                "high": stocks[col].max(),
             }
-
-        #details["latest"] = {
-            #"data": mostRecentDate,
-            #"open": latestData.get("1. open", "N/A"),
-            #"high": latestData.get("2. high", "N/A"),
-            #"low": latestData.get("3.low", "N/A"),
-            #"close": latestData.get("4. close", "N/A"),
-            #"volume": latestData.get("5. volume", "N/A"),
-        #}
-
         
-        print("Details values: ", details, type(details))
-        my_final_data = stocks.to_dict()
+        count = len(stocks)
 
-        return my_final_data
+        result = {
+            symbol: stats,
+            "count": count
+        }
+
+        pprint(result)
+
+        return result
+    
     except Exception as error:
         print(f"Error parsing stock data details: {error}")
         return {}
 
+# TODO 5
+def get_standing(details:dict)->str:
+    try:
+        symbol = next(key for key in details.keys() if key != "count")
+
+        data = details[symbol]
+
+        open_stats = data["open"]
+        close_stats = data["close"]
+        high_stats = data["high"]
+        low_stats = data["low"]
+
+        price_range = high_stats["mean"] - low_stats["mean"]
+        volatility = close_stats["std"]
+        skew = close_stats["median"] - close_stats["mean"]
+
+        if price_range > 10 and volatility >5:
+            standing = "Risky"
+        elif skew > 2:
+            standing = "Improving"
+        elif skew < -2:
+            standing = "Declining"
+        else:
+            standing = "Stable"
+
+        pprint(f"Determined standing: {standing}")
+
+        return standing
+    
+    except Exception as error:
+        print(f"Error calculating standing: {error}")
+        return "Unknown"
+    
 # we will export this function 
 def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", endpoint:str="query"):
     '''
@@ -101,10 +130,10 @@ def fetch_stock_data(params:str, base_url:str=" https://www.alphavantage.co", en
             details = get_data_details(data)
 
             # TODO 5
-            # standing = get_standing(details)
-            # result = details["standing"] = standing
+            standing = get_standing(details)
+            result = details["standing"] = standing
         
-        # return result # Done
+        return result # Done
 
     except Exception as some_error:
         print(f"There was an issue with the data fetching function. Error:\n{some_error}")
@@ -117,5 +146,32 @@ fetch_stock_data('', '', '')
 
 
 # TODO 5
-# def get_standing(details:dict)->str:
-    # pass
+def get_standing(details:dict)->str:
+    try:
+        symbol = next(key for key in details.keys() if key != "count")
+
+        data = details[symbol]
+
+        open_stats = data["open"]
+        close_stats = data["close"]
+        high_stats = data["high"]
+        low_stats = data["low"]
+
+        price_range = high_stats["mean"] - low_stats["mean"]
+        volatility = close_stats["std"]
+        skew = close_stats["median"] - close_stats["mean"]
+
+        if price_range > 10 and volatility >5:
+            standing = "Risky"
+        elif skew > 2:
+            standing = "Improving"
+        elif skew < -2:
+            standing = "Declining"
+        else:
+            standing = "Stable"
+
+        return standing
+    
+    except Exception as error:
+        print(f"Error calculating standing: {error}")
+        return "Unknown"
