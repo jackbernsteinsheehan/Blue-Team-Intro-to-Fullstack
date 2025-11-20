@@ -8,6 +8,7 @@ from pprint import pprint
 
 # For code running (print testing, etc...), run the file as a `module` with the flag -m
 # py -m backend.data.fetch_stocks <- no .py
+# TODO 4
 def get_data_details(data:dict)->dict:
     
     try:
@@ -22,6 +23,7 @@ def get_data_details(data:dict)->dict:
         
         timeSeriesData = data[timeSeriesKey]
         
+        #create DataFrame from time series data
         stocks = pd.DataFrame.from_dict(timeSeriesData, orient='index')
         stocks = stocks.rename(columns = {
             "1. open": "open",
@@ -30,8 +32,10 @@ def get_data_details(data:dict)->dict:
             "4. close": "close",
             "5. volume": "volume",
         })
+        # convert strings to float
         stocks = stocks.astype(float)
 
+        # calculate statistics
         stats = {}
         for col in stocks.columns:
             stats[col] = {
@@ -42,8 +46,10 @@ def get_data_details(data:dict)->dict:
                 "high": stocks[col].max(),
             }
         
+        #number of entrys
         count = len(stocks)
 
+    
         result = {
             symbol: stats,
             "count": count
@@ -64,15 +70,17 @@ def get_standing(details:dict)->str:
 
         data = details[symbol]
 
+        #get stats
         open_stats = data["open"]
         close_stats = data["close"]
         high_stats = data["high"]
         low_stats = data["low"]
 
-        price_range = high_stats["mean"] - low_stats["mean"]
-        volatility = close_stats["std"]
-        skew = close_stats["median"] - close_stats["mean"]
+        price_range = high_stats["mean"] - low_stats["mean"] #overall movement
+        volatility = close_stats["std"] #how unstable the closing prices are
+        skew = close_stats["median"] - close_stats["mean"] #market trend indicator
 
+        #classification logic
         if price_range > 10 and volatility >5:
             standing = "Risky"
         elif skew > 2:
@@ -131,14 +139,14 @@ def fetch_stock_data(symbol: str, function: str, interval:str= None, apikey: str
         elif response.status_code == 200: 
             print('Yay! The connection works!\n')
 
-            # get the content of the API. This should include the JSON files
+        # get the content of the API. This should include the JSON files
         data:dict = response.json() 
         pprint(data)
             
-            # TODO 4: Uncomment and implement
+        # TODO 4: Uncomment and implement
         details = get_data_details(data)
 
-            # TODO 5
+        # TODO 5
         standing = get_standing(details)
         details["standing"] = standing
         
@@ -153,9 +161,6 @@ def fetch_stock_data(symbol: str, function: str, interval:str= None, apikey: str
 if __name__ == "__main__":
     result = fetch_stock_data(symbol="IBM", function="TIME_SERIES_MONTHLY")
     pprint(result)
-
-# TODO 4
-
 
 # TODO 5
 def get_standing(details:dict)->str:

@@ -12,11 +12,13 @@ def fetch_crypto_data(symbol: str, days: int = 30):
     url = 'https://min-api.cryptocompare.com/data/v2/histoday'
     key = ''  # Add your API key here if required
 
+    #Quary parameterssent to the API
     params = {
-        'fsym': symbol,
-        'tsym': 'USD',
-        'limit': days
+        'fsym': symbol, #from symbol crypto ticker (ex: BTC)
+        'tsym': 'USD', #convert to USD
+        'limit': days  #number of days to fetch
     }
+
     headers = {
         'authorization': f'Apikey {key}'
     }
@@ -31,16 +33,21 @@ def fetch_crypto_data(symbol: str, days: int = 30):
         elif response.status_code != 200:
             raise Exception(f"Unexpected status code: {response.status_code}")
 
+        #Parse JSON data from API response
         data = response.json()
+
+        #validate the structure of the incoming JSON
         if not data or "Data" not in data or "Data" not in data["Data"]:
             raise ValueError("Crypto API returned invalid data structure")
 
     except Exception as e:
+        #print error and stop
         print(f"Failed to fetch crypto data: {e}")
         return None
 
     # Parse OHLCV records
     parsed_records = []
+    # Iterate through each record and extract relevant data
     for record in data["Data"]["Data"]:
         parsed_records.append({
             "open": float(record["open"]),
@@ -53,6 +60,8 @@ def fetch_crypto_data(symbol: str, days: int = 30):
     # Convert to DataFrame for stats
     df = pd.DataFrame(parsed_records)
     stats = {}
+
+    #loop through each column to calculate statistics
     for col in df.columns:
         stats[col] = {
             "mean": df[col].mean(),
@@ -64,18 +73,19 @@ def fetch_crypto_data(symbol: str, days: int = 30):
 
     # Build final details dictionary
     details = {
-        symbol: stats,
-        "count": len(df)
+        symbol: stats, #statistics grouped under the crypto symbol
+        "count": len(df) #number of records fetched
     }
 
     # Determine standing
+    # Reuse the get_standing function from fetch_stocks module
     standing = get_standing(details)
     details["standing"] = standing
 
     return details
 
 
-# --------------------- Test & pretty-print --------------------- #
+# test and print on terminal that it works
 if __name__ == "__main__":
     result = fetch_crypto_data(symbol="BTC", days=30)
     pprint(result)
