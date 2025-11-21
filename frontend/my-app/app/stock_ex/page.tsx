@@ -1,6 +1,6 @@
 'use client'; // REQUIRED for useState and useEffect in Next.js App Router
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 // Helper function to generate a random number within a range
 const getRandomNumber = (min: number, max: number, decimals: number = 2) => {
@@ -19,6 +19,13 @@ const mockStockStats = () => {
         return parseFloat(val.toFixed(decimals));
     }
 
+    // Calculate open, high, and low fields
+    const latestPrice = getRand(150, 200);
+    const dailyHigh = latestPrice * getRand(1.005, 1.03, 3);
+    const dailyLow = latestPrice * getRand(.97, .995, 3);
+    const dailyOpen = getRand(dailyLow, dailyHigh, 2);
+
+
     return {
         symbol: "Mock",
         latestPrice: getRand(150, 200),
@@ -26,8 +33,25 @@ const mockStockStats = () => {
         changePercent: getRand(-5, 5),
         peRatio: getRand(10, 30),
         marketCap: getRand(100, 500) + "B", // Adding 'B' for billion
-    };
+        divYield: getRand(0.5, 5.0),
+        dailyOpen: dailyOpen,
+        dailyHigh: dailyHigh,
+        dailyLow: dailyLow,
+    }
 };
+
+const STAT_DEF: { [key: string]: string } = {
+    "Volume": "place holder",
+    "Change (%)": "place holder",
+    "P/E Ratio": "place holder",
+    "Market Cap": "place holder",
+    "Dividend Yield": "place holder",
+    "Daily Open": "place holder",
+    "Daily High": "place holder",
+    "Daily Low": "place holder",
+    "52 Week High": "place holder",
+    "52 Week Low": "place holder"
+}
 
 // Function to generate mock historical data (30 days)
 const mockHistoryData = (startPrice: number, days: number = 30) => {
@@ -65,6 +89,10 @@ const StockStatsPage = () => {
         changePercent: number;
         peRatio: number;
         marketCap: string;
+        divYield: number;
+        dailyOpen: number;
+        dailyHigh: number;
+        dailyLow: number;
     }
     
     const [data, setData] = useState<StockData | null>(null); 
@@ -150,12 +178,14 @@ const StockStatsPage = () => {
                         value={`${data.changePercent.toFixed(2)}%`} 
                         isPositive={isPositiveChange} 
                     />
-                    
+                    <StatCard title="Daily Open" value={`$${data.dailyOpen.toFixed(2) ?? ''}`} />
+                    <StatCard title="Daily High" value={`$${data.dailyHigh.toFixed(2) ?? ''}`} isPositive={true} />
+                    <StatCard title="Daily Low" value={`$${data.dailyLow.toFixed(2) ?? ''}`} isPositive={false} />
                     <StatCard title="P/E Ratio" value={data.peRatio.toFixed(2)} />
                     <StatCard title="Market Cap" value={`$${data.marketCap}`} />
                     <StatCard title="52 Week High" value={`$${(data.latestPrice * 1.1).toFixed(2)}`} /> 
                     <StatCard title="52 Week Low" value={`$${(data.latestPrice * 0.9).toFixed(2)}`} /> 
-
+                    <StatCard title="Dividend Yield" value={`${data.divYield?.toFixed(2) ?? ''}%`} isPositive={true} />
                 </div>
             </div>
         </div>
@@ -168,10 +198,51 @@ export default StockStatsPage;
 const StatCard = ({ title, value, isPositive }: { title: string, value: string | number, isPositive?: boolean }) => {
     const colorClass = isPositive === true ? 'text-green-600' : isPositive === false ? 'text-red-600' : 'text-gray-900';
     const borderColor = isPositive === true ? 'border-green-800' : isPositive === false ? 'border-red-500' : 'border-green-800';
-    
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const popoverRef = useRef<HTMLDivElement>(null);
+
+    // Get definition from the map
+    const definition = STAT_DEF[title];
+
+    // Close the popover if clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+                setIsPopoverOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
-        <div className={`bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 ${borderColor}`}>
-            <p className="text-md font-medium text-gray-500 mb-1">{title}</p>
+        <div 
+            className={`bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 ${borderColor} relative`}
+            ref={popoverRef} // Attach ref here
+        >
+            {/* Clickable Title Container */}
+            <div 
+                className="flex items-center cursor-pointer group mb-1"
+                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+            >
+                <p className="text-md font-medium text-gray-500 mr-2 group-hover:underline">{title}</p>
+                {/* Info Icon */}
+                <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+
+            {/* Popover/Tooltip Content */}
+            {isPopoverOpen && definition && (
+                <div className="absolute z-20 w-64 p-3 top-0 left-0 mt-2 ml-2 bg-gray-800 text-white text-xs rounded-lg shadow-2xl transform translate-y-full">
+                    {definition}
+                    {/* Triangle pointer */}
+                    <div className="absolute top-0 left-3 w-3 h-3 bg-gray-800 transform -translate-y-1/2 rotate-45"></div>
+                </div>
+            )}
+
             <p className={`text-3xl font-extrabold ${colorClass}`}>{value}</p>
         </div>
     );
