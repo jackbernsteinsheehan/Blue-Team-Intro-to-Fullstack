@@ -4,6 +4,7 @@
 ## won't be compatible with Adriana's.
 from numbers import Number
 import mysql.connector
+import logging
 
 class Connection:
     def __init__(self) -> None:
@@ -59,19 +60,20 @@ class Connection:
                 std DOUBLE,
                 low DOUBLE,
                 max DOUBLE,
-                count INT
-            )
+                count INT,
+                standing VARCHAR(5)
+            );
             """
             
             self.cursor.execute(query)
-            
+            tables = self.show_tables()
             self.conn.commit()
             
-            return 'success'
+            return f'success. Tables are: {tables}'
             
-        except mysql.connector.Error:
+        except mysql.connector.Error as error:
             
-            return 'failure'
+            return error
         from numbers import Number
 
     def query_submit(self, table: str, payload: dict[dict[str, dict[str, float]]]) -> int:
@@ -100,17 +102,10 @@ class Connection:
         Inserts rows into columns:
         (ticker, metric, mean, median, std, low, max, count, standing)
         """
-        
+
         # Make sure it's a dict
         if not isinstance(payload, dict):
             raise ValueError("payload must be a dict")
-
-        # REQUIRED fields
-        if "count" not in payload:
-            raise ValueError("payload['count'] is required")
-        if "standing" not in payload:
-            raise ValueError("payload['standing'] is required")
-
 
         count_val = payload["count"]
         standing_val = payload["standing"]
@@ -119,7 +114,6 @@ class Connection:
             raise ValueError("payload['count'] must be numeric")
         if not isinstance(standing_val, str):
             raise ValueError("payload['standing'] must be a string")
-
 
         # Flatten data
         rows = []
@@ -138,11 +132,11 @@ class Connection:
 
                 # pull stats (all required; error if missing or wrong type)
                 try:
-                    mean_v   = stats["mean"]
-                    std_v    = stats["std"]
+                    mean_v = stats["mean"]
+                    std_v = stats["std"]
                     median_v = stats["median"]
-                    low_v    = stats["low"]
-                    max_v    = stats["max"]
+                    low_v = stats["low"]
+                    max_v = stats["max"]
                 except KeyError as e:
                     raise ValueError(f"Missing stat {e} under {ticker}/{metric_name}")
 
@@ -239,26 +233,28 @@ class Connection:
         {'id': 2, 'ticker': 'IBM', 'metric': 'high', 'mean': 5.5, 'median': 5.5, 'std': 5.5, 
         'low': 5.5, 'max': 5.5, 'count': 3, 'standing': 'good'}
         '''
-        
-        sql = f'SELECT * FROM {table}'
-        self.cursor.execute(sql)
-        rows = self.cursor.fetchall()
+        try:
+            sql = f'SELECT * FROM {table}'
+            self.cursor.execute(sql)
+            rows = self.cursor.fetchall()
 
-        # How do we want the data?
-        '''
-        for row in rows:
-            row_id = row['id']
-            ticker = row['ticker']
-            metric = row['metric']
-            mean = row['mean']
-            median = row['median']
-            std = row['std']
-            low = row['low']
-            maximum = row['maximum']
-            count = row['count']
-            standing = row['standing']
-        '''
-        return rows
+            # How do we want the data?
+            '''
+            for row in rows:
+                row_id = row['id']
+                ticker = row['ticker']
+                metric = row['metric']
+                mean = row['mean']
+                median = row['median']
+                std = row['std']
+                low = row['low']
+                maximum = row['maximum']
+                count = row['count']
+                standing = row['standing']
+            '''
+            return rows
+        except Exception as e:
+            return e
 
     def show_tables(self) -> list[str]:
         '''
@@ -314,6 +310,7 @@ class Connection:
                 sql = f'DROP TABLE `{table}`;'
                 self.cursor.execute(sql)
                 self.conn.commit()
+                new_table_list = self.show_tables()
                 return f'Table deleted: {table}. Current tables are: {new_table_list}.'
 
         except mysql.connector.Error as error:
