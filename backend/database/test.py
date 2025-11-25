@@ -47,7 +47,7 @@ result = db.query_submit("nude_table", {
 
 #result = db.query_extract('test_metrics', "ticker, mean", "metric = 'open' AND mean > 0 AND mean < 10")
 #result = db.show_tables()
-#result = db.query_delete_table('nude_table')
+#result = db.query_delete_table('example_tablee')
 result = db.get_table_data('test_metrics')
-#result = db.query_create_table("nude_table")
+#result = db.query_create_table("example_tablee")
 print(result)
