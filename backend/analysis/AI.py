@@ -1,4 +1,3 @@
-
 # _____________________________________ Module 5 _____________________________________ #
 
 # Here we will connect with an OpenAI through its SDK. This will allow us to directly access a 
@@ -46,11 +45,3 @@ class AI:
             return {"message":"API key is incorrect. Authentication is invalid", "response":{}}
         except Exception:
             return {"message":"There was an error initializing the prompt.", "response":{}}
-
-        
-        
-    
-            
-        
-    
-    

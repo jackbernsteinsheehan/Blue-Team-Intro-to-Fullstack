@@ -4,6 +4,7 @@
 ## won't be compatible with Adriana's.
 from numbers import Number
 import mysql.connector
+import logging
 
 class Connection:
     def __init__(self) -> None:
@@ -59,25 +60,26 @@ class Connection:
                 std DOUBLE,
                 low DOUBLE,
                 max DOUBLE,
-                count INT
-            )
+                count INT,
+                standing VARCHAR(5)
+            );
             """
             
             self.cursor.execute(query)
-            
+            tables = self.show_tables()
             self.conn.commit()
             
-            return 'success'
+            return f'success. Tables are: {tables}'
             
-        except mysql.connector.Error:
+        except mysql.connector.Error as error:
             
-            return 'failure'
+            return error
         from numbers import Number
 
-    def query_submit(self, table: str, payload: dict) -> int:
+    def query_submit(self, table: str, payload: dict[dict[str, dict[str, float]]]) -> int:
         """
 
-        This method has been tested preliminarily, seems to work.
+        This method has been tested. It works. It accepts data formatted as outlined in Module 1 and returns a status code.
 
         Arguably the most important function. This could go perfect or it can cause lots of issues.
         Enters a record on a table.
@@ -88,7 +90,7 @@ class Connection:
         You don't know what type of data to expect! 
         What could you do to upload dynamic data? (e.g. **kwargs, dictionary, etc.. (?))
     
-        Accepts payload:
+        Accepts data in this format:
         {
         "IBM": {
             "open": {"mean": float, "std": float, "median": float, "low": float, "max": float},
@@ -100,16 +102,10 @@ class Connection:
         Inserts rows into columns:
         (ticker, metric, mean, median, std, low, max, count, standing)
         """
+
         # Make sure it's a dict
         if not isinstance(payload, dict):
             raise ValueError("payload must be a dict")
-
-        # REQUIRED fields
-        if "count" not in payload:
-            raise ValueError("payload['count'] is required")
-        if "standing" not in payload:
-            raise ValueError("payload['standing'] is required")
-
 
         count_val = payload["count"]
         standing_val = payload["standing"]
@@ -118,7 +114,6 @@ class Connection:
             raise ValueError("payload['count'] must be numeric")
         if not isinstance(standing_val, str):
             raise ValueError("payload['standing'] must be a string")
-
 
         # Flatten data
         rows = []
@@ -134,16 +129,18 @@ class Connection:
                     continue  # or raise if you want strict checking
                 if not isinstance(stats, dict):
                     raise ValueError(f"payload['{ticker}']['{metric_name}'] must be a dict")
+
                 # pull stats (all required; error if missing or wrong type)
                 try:
-                    mean_v   = stats["mean"]
-                    std_v    = stats["std"]
+                    mean_v = stats["mean"]
+                    std_v = stats["std"]
                     median_v = stats["median"]
-                    low_v    = stats["low"]
-                    max_v    = stats["max"]
+                    low_v = stats["low"]
+                    max_v = stats["max"]
                 except KeyError as e:
                     raise ValueError(f"Missing stat {e} under {ticker}/{metric_name}")
 
+                # Check types
                 for key, val in (("mean",mean_v),("std",std_v),("median",median_v),("low",low_v),("max",max_v)):
                     if not isinstance(val, Number):
                         raise ValueError(f"Stat '{key}' for {ticker}/{metric_name} must be numeric")
@@ -153,18 +150,25 @@ class Connection:
         if not rows:
             return 0
 
+        # Build query
         sql = f"""INSERT INTO {table}
                 (ticker, metric, mean, median, std, low, max, count, standing)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
 
+        # Execute query
         with self.conn.cursor() as cur:
             cur.executemany(sql, rows)
         self.conn.commit()
+
         return 201
 
     
-    def query_extract(self, table: str, field: str, conditions: str=None) -> dict:
+    def query_extract(self, table: str, field: str, conditions: str=None) -> list[dict[str, str]]:
         '''
+
+        This method has been tested. It works. Returns data like this:
+        [{'ticker': 'IBM', 'mean': 5.5}, {'ticker': 'IBM', 'mean': 5.5}, {'ticker': 'HEY', 'mean': 8.7}]
+
         Extract a record from a table. Allow for OPTIONAL filtering conditions. conditions should
         be passed as a boolean statement acceptable for SQL.
         -table: the table name
@@ -198,7 +202,7 @@ class Connection:
             sql = f"SELECT {fields_sql} FROM {table_sql}{where_sql}"
 
             # Execute query
-            print(sql)
+            #print(sql)
             self.cursor.execute(sql)
             rows = self.cursor.fetchall()
 
@@ -218,12 +222,40 @@ class Connection:
             return []
 
     
-    def get_table_data(self) -> dict:
+    def get_table_data(self, table: str) -> list[dict[str, int]]:
         '''
-        Returns ALL of the information contained in a table.
+        This method has been tested. It works. Still need to decide how we want the data to be formatted.
+
+        Returns ALL of the information contained in a table. Return data looks like this: 
+
+        [{'id': 1, 'ticker': 'IBM', 'metric': 'open', 'mean': 5.5, 'median': 5.5, 'std': 5.5, 
+        'low': 5.5, 'max': 5.5, 'count': 3, 'standing': 'good'}, 
+        {'id': 2, 'ticker': 'IBM', 'metric': 'high', 'mean': 5.5, 'median': 5.5, 'std': 5.5, 
+        'low': 5.5, 'max': 5.5, 'count': 3, 'standing': 'good'}
         '''
-        pass # TODO
-        
+        try:
+            sql = f'SELECT * FROM {table}'
+            self.cursor.execute(sql)
+            rows = self.cursor.fetchall()
+
+            # How do we want the data?
+            '''
+            for row in rows:
+                row_id = row['id']
+                ticker = row['ticker']
+                metric = row['metric']
+                mean = row['mean']
+                median = row['median']
+                std = row['std']
+                low = row['low']
+                maximum = row['maximum']
+                count = row['count']
+                standing = row['standing']
+            '''
+            return rows
+        except Exception as e:
+            return e
+
     def show_tables(self) -> list[str]:
         '''
         Returns a list of all table names in the data base
@@ -231,17 +263,18 @@ class Connection:
         try:
             # Not sure if this query is correct
             query = '''
-            SELECT table_name
-            FROM information.schema.tables
-            WHERE table_schema = DATABASE()
-            AND table_type = 'BASE_TABLE'
-            ORDER BY table_name
+            SELECT TABLE_NAME AS name
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_TYPE = 'BASE TABLE'
+            ORDER BY TABLE_NAME;
             '''
+
             self.cursor.execute(query)
             rows = self.cursor.fetchall()
             names = []
             for row in rows:
-                names.append(row["table_name"])
+                names.append(row["name"])
             return names
 
         except mysql.connector.Error as error:
@@ -253,16 +286,38 @@ class Connection:
     def custom_query(self, query:str):
         '''
         Creates a custom query for potential user use.
+        Talk to frontend to see what else they could want
         '''
-        pass # TODO
+        pass
     
     # ___________________ Danger Zone ___________________ #
     
-    def query_delete_table(self):
+    def query_delete_table(self, table, conditions=None):
         '''
+        This method has been tested. It works.
+
         Deletes a specified table. Again, allow for OPTIONAL filtering conditions. 
         '''
-        pass # TODO
+        try:
+            if isinstance(conditions, str):
+                sql = f'DROP TABLE `{table}` WHERE {conditions};'
+                self.cursor.execute(sql)
+                self.conn.commit()
+                new_table_list = self.show_tables()
+                return f'Table deleted: {table}. Current tables are: {new_table_list}.'
+
+            if not isinstance(conditions, str):
+                sql = f'DROP TABLE `{table}`;'
+                self.cursor.execute(sql)
+                self.conn.commit()
+                new_table_list = self.show_tables()
+                return f'Table deleted: {table}. Current tables are: {new_table_list}.'
+
+        except mysql.connector.Error as error:
+                    return f'DB error: {error}'
+        except Exception as error:
+            return f'There was an error: {error}'
+
 
     def query_delete_database(self):
         
