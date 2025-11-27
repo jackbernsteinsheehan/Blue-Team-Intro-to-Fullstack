@@ -32,8 +32,8 @@ const Navbar = () => {
                         {/* Button 2 - Stock Page */} 
                         <li>
                             {/* Replaced Link with <a> */}
-                            <a href="/stock_ex" className="text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out hover:bg-green-600 hover:text-white">
-                                Stocks Dashboard
+                            <a href="/test_api" className="text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out hover:bg-green-600 hover:text-white">
+                                Test_API Page
                             </a>
                         </li>
                         
