@@ -36,6 +36,14 @@ const Navbar = () => {
                                 Stocks Dashboard
                             </a>
                         </li>
+
+                        {/* Button 3 - Test API */}
+                        <li> 
+                            <a href="/test_api" className="text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out hover:bg-green-600 hover:text-white">
+                                API TEST
+                            </a>
+
+                        </li>
                         
                     </ul>
                 </div>
