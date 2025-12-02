@@ -24,8 +24,8 @@ const Navbar = () => {
                         {/* Button 1 - Home page */}
                         <li> 
                             {/* Replaced Link with <a> */}
-                            <a href="/" className="text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out hover:bg-green-600 hover:text-white">
-                                Home
+                            <a href="/about" className="text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out hover:bg-green-600 hover:text-white">
+                                AboutUs
                             </a>
                         </li>
 
