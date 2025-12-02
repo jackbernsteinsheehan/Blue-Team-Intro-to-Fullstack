@@ -28,7 +28,7 @@ const AboutUs: React.FC = () => {
                 <h2 className="text-3xl font-semibold mb-6">Our Team</h2>
 
             {/* First team members in a grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
               <div className="bg-white shadow-lg rounded-2xl p-6">
                 <h3 className="font-bold text-xl mb-2">Carla Lopez</h3>
                 <p className="text-gray-600">Front-end Developer</p>
