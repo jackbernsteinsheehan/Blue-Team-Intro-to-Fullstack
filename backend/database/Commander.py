@@ -22,7 +22,7 @@ class Commander(Connection):
 
         # vvv Hardcode This Attributes vvv #
         
-        self.stock_parameters = ''
+        self.stock_parameters = 'QFSWP568YXWUPB5U'
         
         self.stock_data:dict = self.__load_stocks()
 
@@ -52,33 +52,23 @@ class Commander(Connection):
     def __init_stocks_table(self):
         '''
         Initializes and populates the stocks table from self.stock_data
+        Data should already be in the correct format. The query_submit method is written 
+        to accept data in the form of the result from fetch_stock_data.
         ''' 
-        for ticker, metrics in self.stock_data.items():
-            if ticker in ['count', 'standing']:
-                continue
 
-            for metric, stats in metrics.items():
-                status = self.query_submit(
-                    ...
-                )
-                
-                if status != 201:
-                    pass # something happens
+        status = self.query_submit('stocks', self.stock_data)
+
+        if status != 201:
+            pass # something happens
 
     def __init_crypto_table(self):
         '''
         Initializes and populates the crypto table from self.crypto_data
         '''
-        for ticker, metrics in self.crypto_data.items():
-            if ticker in ['count', 'standing']:
-                continue
 
-            for metric, stats in metrics.items():
-                status = self.query_submit(
-                    ...
-                )
-                
-                if status != 201:
+        status = self.query_submit('crypto', self.crypto_data)
+
+        if status != 201:
                     pass # something happens
     
     def __init_tables(self):
@@ -96,6 +86,7 @@ class Commander(Connection):
         We will iterate over the dictionaries within the `self.stock_data` and `self.crypto_data`, and populate 
         the entries one by one with the `query_submit` function. 
         '''
+
         try:
             self.query_create_table('stocks')
             self.query_create_table('crypto')
@@ -115,7 +106,7 @@ class Commander(Connection):
     def extract_record(self, table:str, key:dict):
 
         if not self.__is_valid_table(table):
-            return # idk some error here, or whatever. You are the engineer.
+            return 'error: invalidTableError'
         
         record = self.query_extract(key)
         

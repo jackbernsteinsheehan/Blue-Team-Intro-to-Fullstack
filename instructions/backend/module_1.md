@@ -166,13 +166,25 @@ The final structure of the dictionary that the main export function will return 
             "max": float
         },
         "low": {
-            ... 
+            "mean": float,
+            "std": float,
+            "median": float,
+            "low": float,
+            "max": float 
         },
         "close": {
-            ... 
+            "mean": float,
+            "std": float,
+            "median": float,
+            "low": float,
+            "max": float 
         },
         "volume": {
-            ... 
+            "mean": float,
+            "std": float,
+            "median": float,
+            "low": float,
+            "max": float 
         }
     },
     "count": int,
