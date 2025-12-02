@@ -64,7 +64,7 @@ export default function Page() {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         display: block;
         margin: 0 auto;
-        width: 100%;
+        width: 30%;
         border-radius: 5px; /* <— rounder edges */
         transition: transform 0.25s ease; /* smooth animation */
         }
