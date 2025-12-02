@@ -50,14 +50,18 @@ const StatsPage = () => {
             setError(null);
 
             // Dependent on local host
-            const BASE_URL = 'http:localhost:3000'; 
+            const BASE_URL = 'http://localhost:5000'; 
 
             const Ticker = searchQuery.toUpperCase();           // user input
-            const Fields = "open, high, low, close, volume";    // data we want
-            const Conditions = `ticker = '{Ticker}''`;          // find data using ticker
-            
+            const Fields = "metric, mean, median, std, low, max";    // data we want
+            //const Conditions = `ticker = '${Ticker}'`;
+            const Table = 'test_metrics'        // find data using ticker
+            const Conditions = `ticker = '${Ticker}' AND metric IN ('open','high','low','close','volume')`;
+
+
             // Initiate request for data
-            const url = `${BASE_URL}/extract/${Ticker}/${Fields}/${Conditions}/data`;
+            //const url = `${BASE_URL}/extract/${encodeURIComponent(Table)}/${encodeURIComponent(Fields)}/${encodeURIComponent(Conditions)}/data`;
+;           const url = `${BASE_URL}/extract/${encodeURIComponent(Table)}/${encodeURIComponent(Fields)}/${encodeURIComponent(Conditions)}/data`;
 
             console.log("Fetching data from:", url);
 
@@ -72,6 +76,24 @@ const StatsPage = () => {
                 }
                 
                 const jsonResponse = await response.json();
+                if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
+                // jsonResponse is the array of { metric, mean, median, std, low, max }
+                const rows = jsonResponse as { metric: string; mean: number }[];
+
+                const stock: StockData = {
+                    open:   rows.find(r => r.metric === "open")?.mean   ?? 0,
+                    high:   rows.find(r => r.metric === "high")?.mean   ?? 0,
+                    low:    rows.find(r => r.metric === "low")?.mean    ?? 0,
+                    close:  rows.find(r => r.metric === "close")?.mean  ?? 0,
+                    volume: rows.find(r => r.metric === "volume")?.mean ?? 0,
+                };
+
+                setStockData(stock);
+                } else {
+                setError(`No data found for ticker: ${Ticker}`);
+                setStockData(null);
+                }
+
                 // Proccess the response
                 if (jsonResponse.length > 0) {
                     setStockData(jsonResponse[0] as StockData);
@@ -104,8 +126,8 @@ const StatsPage = () => {
             <input 
                 type="text" 
                 placeholder="Enter company"
-                className="w-full max-w-6xl p-3 mb-4 border border-gray-300 rounded-lg shadow-sm 
-                focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-700
+                className="text-black w-full max-w-6xl p-3 mb-4 border border-black-300 rounded-lg shadow-sm 
+                focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-black-700
                 placeholder:italic"
 
                 value={searchQuery}
