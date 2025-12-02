@@ -61,10 +61,9 @@ export default function Header() {
 
       {/* Navbar */}
       <nav className="navbar">
-        <a href="#" className="active">Home</a>
-        <a href="#">About Us</a>
-        <a href="#">Data</a>
-        <a href="#" className="right">Contact</a>
+        <a href="/" className="active">Home</a>
+        <a href="/about">About Us</a>
+        <a href="/test_api">Data</a>
       </nav>
 
       {/* Styles */}
