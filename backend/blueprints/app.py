@@ -2,15 +2,9 @@ import logging
 import os
 import sys
 from flask_cors import CORS
-from flask import Flask
+from flask import Flask, jsonify
 
-# When running the script directly from the `blueprints` directory (e.g.
-# `cd backend/blueprints && python3 app.py`) Python's import path may not
-# include the repository root, causing `ModuleNotFoundError: No module
-# named 'backend'`. Prefer running the app as a module from the repo
-# root (`python3 -m backend.blueprints.app`). If you need to run the
-# script directly, add a safe fallback that prepends the repo root to
-# `sys.path` and retries the import.
+
 try:
     from backend.database.Connection import Connection
 except ModuleNotFoundError:
@@ -20,7 +14,6 @@ except ModuleNotFoundError:
     from backend.database.Connection import Connection
 
 def create_app(): 
-    
     app = Flask(__name__)
     CORS(app)
     setup_logging(app)
@@ -39,19 +32,18 @@ def setup_logging(app):
 # Initialize app
 app = create_app()
 
-# ________________ General Endpoints _________________#
 @app.route('/create_table/<table>')
 def create_table(table):
     status = Connection.query_create_table(table)
     return status
 
+# ________________ General Endpoints _________________#
 
-           
-
-# _________________ Systematic Endpoint _________________ #
-
-@app.route('/extract/<ticker>/<field>/<conditions>/data')
-def extract_data(ticker, field, conditions=None):
+# one route when conditions are omitted
+@app.route('/extract/<table>/<field>/data', defaults={'conditions': None})
+# one route when conditions are supplied (note: path converter allows spaces/slashes once URL-encoded)
+@app.route('/extract/<table>/<field>/<path:conditions>/data')
+def extract_data(table, field, conditions=None):
     '''
     This method has been tested. It works. Returns data like this:
     [{'ticker': 'IBM', 'mean': 5.5}, {'ticker': 'IBM', 'mean': 5.5}, {'ticker': 'HEY', 'mean': 8.7}]
@@ -64,11 +56,20 @@ def extract_data(ticker, field, conditions=None):
     Example call: query_extract('test_metrics', "ticker, mean", "metric = 'open' AND mean > 0 AND mean < 10")
     Notice how the boolean conditions are formatted. Use this exact format when hitting this endpoint.
     '''
-    if conditions:
-        data = Connection.extract_record(ticker, field, conditions)
-    else:
-        data = Connection.extract_record(ticker, field)
-    return data
+    db = Connection()
+    try:
+        if conditions:
+            data = db.query_extract(table, field, conditions)
+        else:
+            data = db.query_extract(table, field)
+    except Exception as e:
+        # This will log the *real* error in your Flask terminal
+        app.logger.exception("Error in extract_data")
+        # And return the message to curl so you can see it
+        return {"error": str(e)}, 500
+
+    # data is likely a list[dict], so jsonify it
+    return jsonify(data), 200
 
 @app.route('/get/<table>/data')
 def get_table_data(table):
@@ -82,9 +83,11 @@ def get_table_data(table):
     {'id': 2, 'ticker': 'IBM', 'metric': 'high', 'mean': 5.5, 'median': 5.5, 'std': 5.5, 
     'low': 5.5, 'max': 5.5, 'count': 3, 'standing': 'good'}
     '''
-    
-    data = Connection.get_table_data(table)
-    return data
+    db = Connection()
+    data = db.get_table_data(table)
+    return jsonify(data), 200
+
+# _________________ Systematic Endpoint _________________ #
 
 @app.route('/health') 
 def health():
@@ -94,6 +97,5 @@ def health():
     '''
     return "Endpoint is healthy", 200
 
-
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=3000)
+    app.run(host='localhost', port=5000)
