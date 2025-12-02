@@ -1,8 +1,14 @@
 // src/app/page.tsx
 import AboutUs from "./components/AboutUs";
+import NavBar from "./components/NavBar";
 
-export default function Page() {  // ✅ must be Page, not Home
-  return <AboutUs title="About Our Team" />;
+export default function Page() {  
+  return (
+    <>
+    <NavBar />
+    <AboutUs/>
+  </>
+  );
 }
 
 

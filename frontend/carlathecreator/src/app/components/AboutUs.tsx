@@ -29,31 +29,31 @@ const AboutUs: React.FC = () => {
 
             {/* First team members in a grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-             <div className="bg-white shadow-lg rounded-2xl p-6">
-               <h3 className="font-bold text-xl mb-2">Carla Lopez</h3>
-               <p className="text-gray-600">Front-end Developer</p>
-            </div>
-            <div className="bg-white shadow-lg rounded-2xl p-6">
-              <h3 className="font-bold text-xl mb-2">Sasha Ostrow</h3>
-              <p className="text-gray-600">Front-end Developer</p>
-            </div>
-            <div className="bg-white shadow-lg rounded-2xl p-6">
-              <h3 className="font-bold text-xl mb-2">Raymond Chung</h3>
-              <p className="text-gray-600">Front-end Developer</p>
-            </div>
-            <div className="bg-white shadow-lg rounded-2xl p-6">
-              <h3 className="font-bold text-xl mb-2">Jack Bernstein-Sheehan</h3>
-              <p className="text-gray-600">Back-end Developer</p>
-            </div>
-        </div>
+              <div className="bg-white shadow-lg rounded-2xl p-6">
+                <h3 className="font-bold text-xl mb-2">Carla Lopez</h3>
+                <p className="text-gray-600">Front-end Developer</p>
+              </div>
+              <div className="bg-white shadow-lg rounded-2xl p-6">
+                <h3 className="font-bold text-xl mb-2">Sasha Ostrow</h3>
+                <p className="text-gray-600">Front-end Developer</p>
+              </div>
+              <div className="bg-white shadow-lg rounded-2xl p-6">
+                <h3 className="font-bold text-xl mb-2">Raymond Chung</h3>
+                <p className="text-gray-600">Front-end Developer</p>
+              </div>
+              <div className="bg-white shadow-lg rounded-2xl p-6">
+                <h3 className="font-bold text-xl mb-2">Jack Bernstein-Sheehan</h3>
+                <p className="text-gray-600">Back-end Developer</p>
+              </div>
+          </div>
 
             {/* Last team member centered */}
             <div className="flex justify-center">
-             <div className="bg-white shadow-lg rounded-2xl p-6 w-80">
-               <h3 className="font-bold text-xl mb-2">Adriana Walls</h3>
+              <div className="bg-white shadow-lg rounded-2xl p-6 w-80">
+                <h3 className="font-bold text-xl mb-2">Adriana Walls</h3>
                 <p className="text-gray-600">Back-end Developer</p>
-        </div>
-    </div>
+         </div>
+     </div>
     </section>
 </main>
     );

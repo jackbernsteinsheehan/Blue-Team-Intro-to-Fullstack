@@ -1,16 +1,13 @@
 import React from 'react';
 const NavBar = () => {
     return (
-        <> 
-        <div>
-            <button>
-            Press here for more information
+        <>{/* NavBar title */}
+        <div className="w-full flex justify-center p-4 bg-green-500"> 
+            <button className="text-center">
+            OSC Blue Team
             </button>
         </div>
-        <div>
-        ...
-        </div>
-        </> 
+        </>
     );
 }
 export default NavBar;
