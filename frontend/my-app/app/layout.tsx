@@ -1,7 +1,6 @@
-import type { Metadata } from "next";
+/*import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +27,30 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
         {children}
       </body>
     </html>
   );
 }
+*/
+
+import type { Metadata } from "next";
+import "./globals.css";
+import Navbar from "./components/NavBar"; // keep file name as NavBar.tsx
+
+export const metadata: Metadata = {
+  title: "OSC Blue Team",
+  description: "Onboarding project",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <Navbar />  {/* use the same name as the import */}
+        {children}
+      </body>
+    </html>
+  );
+}
+
