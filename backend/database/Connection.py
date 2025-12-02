@@ -61,7 +61,7 @@ class Connection:
                 low DOUBLE,
                 max DOUBLE,
                 count INT,
-                standing VARCHAR(5)
+                standing VARCHAR(20)
             );
             """
             
@@ -165,7 +165,7 @@ class Connection:
     
     def query_extract(self, table: str, field: str, conditions: str=None) -> list[dict[str, str]]:
         '''
-
+        
         This method has been tested. It works. Returns data like this:
         [{'ticker': 'IBM', 'mean': 5.5}, {'ticker': 'IBM', 'mean': 5.5}, {'ticker': 'HEY', 'mean': 8.7}]
 
