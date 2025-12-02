@@ -1,6 +1,7 @@
-/* import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "./components/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,42 +28,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Navbar />
         {children}
       </body>
     </html>
   );
 }
-*/
-
-<div>
-      <div className="header">
-        <h1 className = "header-box">The Blue Team</h1>
-        <h1 className = "title">OSC</h1>
-        <p className = "small-title">Oregon Software Consulting Onborading Project</p>
-      </div>
-
-      <div className="navbar">
-        <a href="#" className="active">Home</a>
-        <a href="#">Link</a>
-        <a href="#">Link</a>
-        <a href="#" className="right">Link</a>
-      </div>
-
-
- <style jsx>{`
-
-
-        .header {
-          background-color: #0b462eff; 
-          padding: 20px;
-          text-align: center;
-          font-weight: bold;
-        }
-
-        .navbar {
-          overflow: hidden;
-          background-color:  #1d2c24ff;
-        }
-
-      `}</style>
-</div>
