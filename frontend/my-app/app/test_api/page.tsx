@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { json } from 'stream/consumers';
 
 interface StockData {
@@ -16,11 +16,56 @@ interface StatCardProps {
     value: number;
 }
 
+const STAT_DEF: { [key: string]: string } = {
+    "Open": "The price when the first stock trade was made when the market opened.",
+    "High": "The highest price the stock trade was at during this period.",
+    "Low": "The lowest price the stock trade was at during this period.",
+    "Close": "The price when the last stock trade was made before the market closed.",
+    "Volume": "The total number of shares or contracts traded during the period."
+}
 const StatCard = ({ title, value }: StatCardProps) => {
+    // Logic for Info Icon 
+    const [isPopOverOpen, setisPopOverOpen] = useState(false);
+    const popoverRef = useRef<HTMLDivElement>(null);
+    const definition = STAT_DEF[title];
+
+    // Close the info if clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+                setisPopOverOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-gray-300">
-            <h3 className="text-md font-medium text-gray-500 mb-1">{title}</h3>
-            <p className="text-3xl font-extrabold text-gray-900">{value}</p>
+        <div className="bg-white p-8 rounded-xl shadow-lg border-l-4 border-[#0b462e] relative"
+        ref={popoverRef}>
+            {/* Title */}
+            <div 
+                className="flex items-center cursor-pointer group mb-1"
+                onClick={() => setisPopOverOpen(!isPopOverOpen)}
+            >
+                <h3 className="text-lg font-medium text-gray-500 mr-2 group-hover:underline">{title}</h3>
+                {/* Info Icon */} 
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+
+            {/* Display Info */}
+            {isPopOverOpen && definition && (
+                <div className="absolute z-20 w-full p-3 top-0 left-0 mt-14 ml-0 bg-gray-800 text-white text-xs rounded-lg shadow-2xl transform translate-y-full">
+                    <p className="font-semibold mb-1 text-base">{title}:</p>
+                    {definition}
+                </div>
+            )}
+
+            <p className="text-4xl font-extrabold text-gray-900">{value}</p>
         </div>
     );
 };
@@ -106,35 +151,35 @@ const StatsPage = () => {
 
     return (
         <div className="bg-white min-h-screen flex flex-col items-center p-8 font-inter">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">API Testing</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Stocks</h2>
 
             {/* Search Bar */}
             <input
                 type="text"
                 placeholder="Enter company"
-                className="text-black w-full max-w-6xl p-3 mb-4 border border-black-300 rounded-lg shadow-sm 
+                className="text-black w-full max-w-7xl max-w-6xl py-5 px-6 mb-4 border-1 border-black-300 rounded-lg shadow-sm 
                 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-black-700
-                placeholder:italic"
+                placeholder:italic text-xl"
 
                 value={searchQuery}
                 onChange={(character) => setSearchQuery(character.target.value)}
             />
 
             {/* Conditional Loading/Error msgs */}
-            {isLoading && (
+            {/* {isLoading && (
                 <p className="text-xl text-blue-600 mb-6 font-medium animate-pulse">
                     <span role="img" aria-label="loading">⏳</span> Loading data for **{searchQuery}**...
                 </p>
-            )}
-            {error && (
+            )} */}
+            {/* {error && (
                 <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full max-w-6xl mb-6" role="alert">
                     <p className="font-bold">Fetch Error</p>
                     <p>{error}</p>
                 </div>
-            )}
+            )} */}
 
             {/* Stat cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-6xl w-full">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-7xl w-full">
                 <StatCard title="Open" value={displayData.open} />
                 <StatCard title="High" value={displayData.high} />
                 <StatCard title="Low" value={displayData.low} />
