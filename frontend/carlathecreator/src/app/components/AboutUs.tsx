@@ -22,7 +22,7 @@ const AboutUs: React.FC = () => {
                 <div className="bg-white shadow-lg rounded-2xl p-6">
                   <p className="text-gray-800 leading-relaxed">
                     Our mission is to grow as aspiring software engineers while strengthening our skills 
-                    and creating meaningful impact. Throughout this journey@ we have been able to grow and collaborate as a team 
+                    and creating meaningful impact. Throughout this journey we have been able to grow and collaborate as a team 
                     to display our skils for the next step as software engineers at OSC. 
                   </p>
                 </div>
