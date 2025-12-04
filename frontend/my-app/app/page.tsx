@@ -10,43 +10,36 @@ export default function Page() {
         <div className="side"></div>
 
         <div className="main">
-          <h1 className="main_header">Welcome to our page</h1>
-
-          <h2>
-            Our mission is to bring data to you to examine through charts of
-            stock data. Explore our website by checking out our About Us and
-            Data pages.
-          </h2>
+          <h1 className="main_header">《 Welcome to our page 》</h1>
+          <h1 className="inbox_title">🟆 Please explore our website! 🟆</h1>
 
           <div className="main-box">
-            As students at the University of Oregon, we are members of OSC — a
-            club dedicated to connecting students with real-world clients to
-            create free, impactful software solutions and develop the next
-            generation of talent. Our team was split into a back-end team and a
-            front-end team who worked together on this project.
+           As the onborading team part of OSC we worked together to show our coding and team readiness skills. This was a 10 week long project we began during the beginning of Fall term 2025 in hopes to prove our skills to OSC to contiune our jounrey to move on to cilent work our following term. Our team was split apart to work on different sides of the website, with half the team being assigned front end development and the other half working on back end development.
           </div>
 
           {/* FRONT END BOX */}
-          <div className="side-box">
-            <div className="inbox_title">What the front end did</div>
-            <img
-              src="/font_end.png"
-              alt="Front end"
-              className="img-detail"
-            />
-            <p>Worked on displaying the website</p>
-          </div>
+          <div className="side-box-blocking">
+            <div className="side-box">
+              <div className="inbox_title"> 🟆 What the front end did 🟆</div>
+              <img
+                src="/font_end.png"
+                alt="Front end"
+                className="img-detail"
+              />
+              <p>developed .tsx files to build our website by split the work between 3 people with each person being assigned one part of the website, we choose who wanted to work on the home, about us, and data page. From there, each person coding their own section of the website and at the end, we shared our files to combine our work.</p>
+            </div>
 
-          {/* BACK END BOX */}
-          <div className="side-box">
-            <div className="inbox_title">What the back end did</div>
-            <img
-              src="/back_end.png"
-              alt="Back end"
-              className="img-detail"
-              
-            />
-            <p>Worked on data</p>
+            {/* BACK END BOX */}
+            <div className="side-box">
+              <div className="inbox_title">🟆 What the back end did 🟆</div>
+              <img
+                src="/back_end.png"
+                alt="Back end"
+                className="img-detail"
+                
+              />
+              <p>Handled utilizing public APIs to fetch live stock data and store it using SQL while also implementing Flask API connections with Python to provide the data to front end.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -60,6 +53,7 @@ export default function Page() {
       <style jsx>{`
 
       .img-detail {
+    
         text-align: center;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         display: block;
@@ -73,8 +67,12 @@ export default function Page() {
           transform: translateY(-8px); /* moves image up */
           box-shadow: 0 6px 16px rgba(14, 27, 24, 0.49); /* blue glow on hover */
         }
+          .side-box p {
+            margin-top: 20px;  /* controls spacing between img + text */
+          }
 
         .inbox_title{
+        font-family: "Courier New", Courier, monospace;
           text-align: center;
           font-size: 20px;
           padding: 20px;
@@ -85,11 +83,14 @@ export default function Page() {
           text-align: center;
           font-size: 60px;
           padding: 20px;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .main_header:hover {
           transform: scale(1.05);
-          shadow: 0 6px 16px rgba(14, 27, 24, 0.49); /* blue glow on hover */
+          shadow: 0 6px 16px rgba(14, 27, 24, 0.49); 
+          color: #1f7e42ff;
+          font-weight: bold;
         }
 
         .title {
@@ -150,6 +151,13 @@ export default function Page() {
         }
 
         .main-box {
+          flex: 1;
+          max-width: 70%;
+          display: flex;
+          justify-content: center;
+          gap: 30px;       /* space between boxes */
+          flex-wrap: wrap; /* prevents breaking on small screens */
+          margin-top: 20px;
           text-align: center;
           display: block;
           background-color: #f1f1f1;
@@ -161,6 +169,8 @@ export default function Page() {
         }
 
         .side-box {
+          flex: 1;
+           max-width: 45%;
           text-align: center;
           display: inline-block;
           width: 45%;
@@ -172,6 +182,15 @@ export default function Page() {
           color: black;
           vertical-align: top;
         }
+        
+        .side-box-blocking {
+          display: flex;
+          justify-content: center;
+          gap: 30px;       /* space between boxes */
+          flex-wrap: wrap; /* prevents breaking on small screens */
+          margin-top: 20px;
+        }
+
 
         .footer {
           background-color: #1d2c24;
