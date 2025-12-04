@@ -8,19 +8,24 @@ const AboutUs: React.FC = () => {
             {/* Header Section */}
             <section className="text-center mb-12 max-w-2xl">
                 <h1 className="text-5xl font-bold mb-4">About Us</h1>
-                <p className="text-lg text-gray-800">
-                    We're a team of aspiring engineers at the University of Oregon who are passionate
-                    about creating innovative technology and developing innovative solutions.
-                </p>
+                <div className="bg-white shadow-lg rounded-2xl p-6">
+                  <p className="text-lg text-gray-800">
+                    We are the Blue Team of OSC Onboarding Project. Our team consists of our front-end developers
+                    and back-end developers. We are passionate about creating innovative technology and developing innovative solutions.
+                  </p>
+                </div>
             </section>
 
             {/* Mission Seection */}
             <section className="max-w-3xl mb-12 text-center">
                 <h2 className="text-3xl font-semibold mb-6">Our Mission</h2>
-                <p className="text-gray-800 leading-relaxed">
-                    Supporting eachother as developers and teammates to 
-                    grow as aspiring software engineers.
-                </p>
+                <div className="bg-white shadow-lg rounded-2xl p-6">
+                  <p className="text-gray-800 leading-relaxed">
+                    Our mission is to grow as aspiring software engineers while strengthening our skills 
+                    and creating meaningful impact. Throughout this journey we have been able to grow and collaborate as a team 
+                    to display our skils for the next step as software engineers at OSC. 
+                  </p>
+                </div>
             </section>
 
             {/* Team Section */}
