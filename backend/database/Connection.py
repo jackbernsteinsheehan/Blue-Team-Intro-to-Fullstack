@@ -5,13 +5,17 @@
 from numbers import Number
 import mysql.connector
 import logging
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class Connection:
     def __init__(self) -> None:
         
-        self.host = 'localhost'
-        self.user = 'root'
-        self.password = 'Jj09080908$'
+        self.host = os.getenv('DB_HOST')
+        self.user = os.getenv('DB_USER')
+        self.password = os.getenv('DB_PASSWORD')
         self.database = 'OSC'
         
         self.status = 'inactive'

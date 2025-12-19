@@ -10,7 +10,7 @@ from backend.database.Connection import Connection
 from backend.data.fetch_stocks import fetch_stock_data
 db = Connection()
 '''
-result = db.query_submit("nude_table", {
+result = db.query_submit("dude_table", {
     "HEY": { # HEY as an example
         "open": {
             "mean": 8.7,
@@ -52,7 +52,8 @@ result = db.query_submit("nude_table", {
     "standing": "bad"  # added after using the get_standing() function
 })
 '''
-data = fetch_stock_data('AMD')
+
+data = fetch_stock_data('F')
 #result = db.query_extract('test_metrics', 'mean', 'ticker="IBM" AND metric="open"')
 #result = db.query_extract('test_metrics', "ticker, mean")
 #result = db.show_tables()
